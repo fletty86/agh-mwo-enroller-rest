@@ -60,7 +60,29 @@ public class MeetingRestController {
 			return new ResponseEntity<Collection<Participant>>(participants, HttpStatus.OK);
 	    }
 	}
-	
+	@RequestMapping(value = "/{id}/participants", method = RequestMethod.POST)
+	public ResponseEntity<?> addMeetingParticipants(@PathVariable("id") long id, @RequestBody Participant participantData) {
+		Meeting meeting = meetingService.findById(id);
+	    if (meeting == null) { 
+	    	return new ResponseEntity("Unable to add participant. A meeting with id " + (id) + " doesn't exist.", HttpStatus.CONFLICT);
+	    }
+	    else {
+	    	String login = participantData.getLogin();
+	    	System.out.println("login: " + login);
+	    	if (login == null) {
+	    		return new ResponseEntity("Unable to add participant. No login data in the request: " + participantData, HttpStatus.CONFLICT);
+	    	} else {
+			    Participant participant = participantService.findByLogin(login);
+			    if (participant == null) {
+			    	return new ResponseEntity("Unable to add participant. A participant with login " + participantData.getLogin() + " doesn't exist.", HttpStatus.CONFLICT);
+			    }
+			    else {
+					meeting.addParticipant(participant);
+					return new ResponseEntity(HttpStatus.CREATED);
+			    }
+	    	}
+	    }
+	}
 
 }
 
